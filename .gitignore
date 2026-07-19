@@ -1,0 +1,23 @@
+
+# Arquivos compilados do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Banco de dados local de desenvolvimento (SQLite)
+db.sqlite3
+db.sqlite3-journal
+
+# Ambientes virtuais de desenvolvimento
+venv/
+.venv/
+env/
+ENV/
+
+# Configurações de IDEs (VS Code / PyCharm)
+.vscode/
+.idea/
+
+# Arquivos de sistema do sistema operacional
+.DS_Store
+Thumbs.db

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máquina de Refrigerante Django</title>
+    <style>
+        body {
+            background-color: #121214;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+
+        /* Estrutura Principal da Máquina */
+        .maquina {
+            background-color: #202024;
+            width: 350px;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 4px solid #29292e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .titulo {
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            color: #04d361;
+        }
+
+        /* Painel de Botões superiores */
+        .painel-botoes {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 60px; /* Espaço para a lata cair por trás */
+            z-index: 2;
+        }
+
+        .btn-bebida {
+            width: 80px;
+            height: 80px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-bebida:active {
+            transform: scale(0.95);
+        }
+
+        .coca { background-color: #e50914; }
+        .guarana { background-color: #00875f; }
+        .fanta { background-color: #ff9000; }
+
+        /* Gaveta de Saída Embaixo */
+        .gaveta-saida {
+            width: 100%;
+            height: 100px;
+            background-color: #121214;
+            border-radius: 10px;
+            border-bottom: 8px solid #29292e;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            }
+
+
+                    /* Painel de Status estilo LED */
+        .status-led {
+        background-color: #1a1a1e;
+        border: 2px solid #29292e;
+        border-radius: 8px;
+        padding: 10px;
+        width: 80%;
+        text-align: center;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        color: #04d361; /* Cor verde estilo terminal/LED */
+        margin-bottom: 20px;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        /* A Latinha invisível que vai cair */
+        .lata-animada {
+        width: 50px;
+        height: 80px;
+        border-radius: 8px;
+        position: absolute;
+        top: 20px;          /* Mudado para alinhar exatamente com o frame 0% do keyframes */
+        font-size: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        opacity: 0;         /* Mantém oculta até receber o comando */
+        transform: rotate(0deg);
+
+        
+
+
+}
+        /* Classes dinâmicas para as cores da latinha */
+        .lata-coca { background-color: #e50914; border: 2px solid #fff; }
+        .lata-guarana { background-color: #00875f; border: 2px solid #fff; }
+        .lata-fanta { background-color: #ff9000; border: 2px solid #fff; }
+
+        /* Animação de Queda Livre até a gaveta */
+        @keyframes cair {
+        0% {
+            top: 20px;
+            opacity: 0;
+            transform: rotate(0deg);
+        }
+        15% {               /* Torna visível logo no início da descida */
+            opacity: 1;
+        }
+        100% {
+            top: 205px;     /* Ajustado para encaixar perfeitamente no centro da gaveta */
+            opacity: 1;
+            transform: rotate(90deg); /* Cai deitada */
+        }
+    }
+    </style>
+</head>
+<body>
+
+    <div class="maquina">
+        <div class="titulo">Escolha sua bebida</div>
+
+        <!-- Botões superiores -->
+        <div class="painel-botoes">
+            <button class="btn-bebida coca" onclick="comprar('coca')">Coca</button>
+            <button class="btn-bebida guarana" onclick="comprar('guarana')">Guaraná</button>
+            <button class="btn-bebida fanta" onclick="comprar('fanta')">Fanta</button>
+        </div>
+
+        <!-- Painel de texto estilo LED da máquina -->
+        <div id="status-led" class="status-led">Aguardando comando...</div>
+
+        <!-- Elemento flutuante da latinha (fica no meio do caminho) -->
+        <div id="lata" class="lata-animada">🥤</div>
+
+        <!-- Gaveta de saída embaixo -->
+        <div class="gaveta-saida">
+            <!-- A lata vai parar aqui visualmente -->
+        </div>
+    </div>
+
+    <!-- Script de Interação vai aqui embaixo -->
+
+    <script>
+    function comprar(nomeBebida) {
+    const elementoLata = document.getElementById('lata');
+    const painelLed = document.getElementById('status-led');
+    const botoes = document.querySelectorAll('.btn-bebida');
+    
+    // 1. Bloqueia os botões e atualiza o LED
+    botoes.forEach(btn => btn.disabled = true);
+    painelLed.innerText = "Processando pedido...";
+    painelLed.style.color = "#ff9000"; // Laranja para "processando"
+
+    // Limpa animações anteriores
+    elementoLata.classList.remove('animar-queda', 'lata-coca', 'lata-guarana', 'lata-fanta');
+    void elementoLata.offsetWidth; 
+
+    // Envia a requisição POST para o Django
+    fetch('/liberar/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bebida: nomeBebida })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            // 2. Atualiza o LED com a mensagem de sucesso vinda do Django
+            painelLed.innerText = data.mensagem;
+            painelLed.style.color = "#04d361"; // Verde para sucesso
+            
+            elementoLata.classList.add(`lata-${data.bebida}`);
+            elementoLata.classList.add('animar-queda');
+
+            // 3. Quando a animação terminar (800ms), libera os botões para a próxima compra
+            setTimeout(() => {
+                botoes.forEach(btn => btn.disabled = false);
+            }, 800);
+
+        } else {
+            painelLed.innerText = "Erro: " + data.mensagem;
+            painelLed.style.color = "#e50914"; // Vermelho para erro
+            botoes.forEach(btn => btn.disabled = false);
+        }
+    })
+    .catch(error => {
+        console.error('Erro de comunicação:', error);
+        painelLed.innerText = "Erro de conexão.";
+        painelLed.style.color = "#e50914";
+        botoes.forEach(btn => btn.disabled = false);
+    });
+}
+</script>
+</body>
+</html>
