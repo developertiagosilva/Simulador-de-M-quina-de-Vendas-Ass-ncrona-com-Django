@@ -1,4 +1,4 @@
-# Estudo de Caso: Simulador de Máquina de Vendas Assíncrona com Django
+# Simulador de Máquina de Vendas Assíncrona com Django
 
 Este repositório contém o desenvolvimento de uma aplicação web que simula uma máquina de venda de refrigerantes automática. O objetivo principal deste projeto foi estudar a integração do **Django (Backend)** com **JavaScript nativo (Frontend)** utilizando comunicação assíncrona (API REST/JSON) e controle de estado de interface.
 
